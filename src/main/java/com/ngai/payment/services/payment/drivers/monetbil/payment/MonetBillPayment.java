@@ -18,6 +18,8 @@ import com.ngai.payment.services.payment.drivers.monetbil.payment.feign.MonetBil
 import com.ngai.payment.utils.Parameters;
 import com.ngai.payment.utils.Utility;
 
+import java.sql.SQLException;
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.Date;
 import java.util.Optional;
 import java.util.UUID;
@@ -25,13 +27,17 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.EntityExistsException;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.PersistenceException;
+import javax.transaction.Transactional;
 
 @Component
+@Transactional
 public class MonetBillPayment extends MobilePaymentImpl implements ICallbackPayment<MonentBillCallbackResponse> {
     private static final Logger LOG = LogManager.getLogger();
     private
@@ -144,25 +150,23 @@ public class MonetBillPayment extends MobilePaymentImpl implements ICallbackPaym
         applicationEventPublisher.publishEvent(new CallbackEvent(this, paymentResponse, optTrace.get().getStrCallbackUrl()));
     }
     //</editor-fold>
-    @Transactional
-    public boolean validateCallback(String paymentRef, String status){
+    public boolean validateCallback(String paymentRef, String status) {
         try {
             TReceivedCallback tReceivedCallback = new TReceivedCallback();
             tReceivedCallback.setLgtraceId(paymentRef);
             tReceivedCallback.setStrStatus(status);
             tReceivedCallback.setDtDateCreated(new Date());
 
-//            em.getTransaction().begin();
             em.persist(tReceivedCallback);
-//            em.getTransaction().commit();
+            return true;
+        } catch (DataIntegrityViolationException | EntityExistsException ex) {
+            if (ex.getMessage().contains(SQLIntegrityConstraintViolationException.class.getSimpleName())){
+                LOG.error("callback already processed for {}", paymentRef);
+            }
+            else LOG.error("error while processing inserting callback {}, {}", paymentRef, status);
 
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            System.out.println(ex.getCause());
-            LOG.error("callback already processed for {}, {}", paymentRef, ex.getMessage());
-            return false;
         }
-        
-        return true;
+
+        return false;
     }
 }
