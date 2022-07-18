@@ -2,27 +2,25 @@ package com.ngai.payment.services;
 
 import com.ngai.payment.model.dto.PaymentResponse;
 import com.ngai.payment.services.custom.CallbackEvent;
-import io.netty.channel.ChannelOption;
-import io.netty.handler.timeout.ReadTimeoutHandler;
-import io.netty.handler.timeout.WriteTimeoutHandler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.ApplicationListener;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.BodyInserters;
-import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Mono;
-import reactor.netty.http.client.HttpClient;
-
-import java.time.Duration;
-import java.util.concurrent.TimeUnit;
+import org.springframework.http.HttpEntity;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestTemplate;
 
 @Service
 public class CallbackService implements ApplicationListener<CallbackEvent> {
     private static final Logger LOG = LogManager.getLogger(CallbackService.class);
+    private final RestTemplate restTemplate;
+
+    public CallbackService(RestTemplateBuilder restTemplateBuilder) {
+        this.restTemplate = restTemplateBuilder.build();
+    }
+    
     @Override
     public void onApplicationEvent(CallbackEvent event) {
         LOG.info("received event to push callback");
@@ -33,31 +31,11 @@ public class CallbackService implements ApplicationListener<CallbackEvent> {
         postCallbackFeedback(url, response);
     }
 
-    private void postCallbackFeedback(String url, PaymentResponse response) {
-        try {
-            HttpClient httpClient = HttpClient.create()
-                    .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5000)
-                    .responseTimeout(Duration.ofMillis(5000))
-                    .doOnConnected(conn ->
-                            conn.addHandlerLast(new ReadTimeoutHandler(5000, TimeUnit.MILLISECONDS))
-                                    .addHandlerLast(new WriteTimeoutHandler(5000, TimeUnit.MILLISECONDS)));
-            WebClient client =
-                    WebClient.builder()
-                    .baseUrl(url)
-                    .clientConnector(new ReactorClientHttpConnector(httpClient))
-                    .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                    .build();
-
-            WebClient.UriSpec<WebClient.RequestBodySpec> uriSpec = client.post();
-            WebClient.RequestBodySpec bodySpec = uriSpec.uri("");
-
-            WebClient.RequestHeadersSpec headersSpec = bodySpec.body(
-                    BodyInserters.fromPublisher(Mono.just(response),
-                    PaymentResponse.class));
-
-            Mono<String> res = headersSpec.retrieve()
-                    .bodyToMono(String.class);
-        } catch (Exception exception) {
+    public void postCallbackFeedback(String url, PaymentResponse response) {
+        try  {
+            HttpEntity<PaymentResponse> request = new HttpEntity<>(response);
+            this.restTemplate.postForEntity(url, request, String.class);
+        } catch (RestClientException exception) {
             LOG.error("error while post callback {}", exception.getMessage());
         }
     }
