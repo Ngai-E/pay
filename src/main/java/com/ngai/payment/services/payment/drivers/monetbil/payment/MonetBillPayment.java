@@ -40,20 +40,23 @@ import javax.transaction.Transactional;
 @Transactional
 public class MonetBillPayment extends MobilePaymentImpl implements ICallbackPayment<MonentBillCallbackResponse> {
     private static final Logger LOG = LogManager.getLogger();
-    private
-    
-    @Autowired
+
     MonetBillFeignClient monetBillFeignClient;
-    @Autowired
     TReceivedCallbackRepository tReceivedCallbackRepository;
-    @Autowired
     ApplicationEventPublisher applicationEventPublisher;
     @PersistenceContext
     EntityManager em;
 
-    @Autowired
-    public MonetBillPayment(TTraceRepository tTraceRepository, TTraceStatusRepository tTraceStatusRepository) {
+    public MonetBillPayment(TTraceRepository tTraceRepository,
+                            TTraceStatusRepository tTraceStatusRepository,
+                            MonetBillFeignClient monetBillFeignClient,
+                            ApplicationEventPublisher applicationEventPublisher,
+                            TReceivedCallbackRepository tReceivedCallbackRepository) {
         super(tTraceStatusRepository, tTraceRepository, MonetBillPayment.class.getSimpleName());
+
+        this.monetBillFeignClient = monetBillFeignClient;
+        this.applicationEventPublisher = applicationEventPublisher;
+        this.tReceivedCallbackRepository = tReceivedCallbackRepository;
     }
 
 
@@ -76,18 +79,18 @@ public class MonetBillPayment extends MobilePaymentImpl implements ICallbackPaym
     public void proceedExternal() {
         PaymentContext paymentContext = super.getContext();
 
-        if (context.hasError()) return;
+        if (getContext().hasError()) return;
 
         MonetbillPaymentRequestDto paymentRequestDto = new MonetbillPaymentRequestDto();
 
-        paymentRequestDto.setAmount(String.valueOf(context.getAmount()));
+        paymentRequestDto.setAmount(String.valueOf(getContext().getAmount()));
         paymentRequestDto.setNotify_url(String.format((String) ParamsCache.getParam(Parameters.KEY_CALLBACK_BASE_URL),
-                tPaymentProviders.getStrPaymentCode(),
+                gettPaymentProviders().getStrPaymentCode(),
                 paymentContext.getTraceId())
         );
-        paymentRequestDto.setPhonenumber(context.getTel());
+        paymentRequestDto.setPhonenumber(getContext().getTel());
         paymentRequestDto.setService((String) ParamsCache.getParam(Parameters.KEY_SECRET_URL));
-        paymentRequestDto.setPayment_ref(context.getTraceId());
+        paymentRequestDto.setPayment_ref(getContext().getTraceId());
 
         MonetbillPaymentResponseDto paymentResponseDto = monetBillFeignClient.placePayment(paymentRequestDto);
 
@@ -144,7 +147,7 @@ public class MonetBillPayment extends MobilePaymentImpl implements ICallbackPaym
 
         updatePaymentStatus(callbackResponse.getPayment_ref(), payment_status);
 
-        paymentResponse.setPaymentRef(callbackResponse.getPayment_ref());
+        paymentResponse.setPaymentRef(optTrace.get().getStrOriginatingTransaction());
         paymentResponse.setStatus(payment_status.name());
 
         applicationEventPublisher.publishEvent(new CallbackEvent(this, paymentResponse, optTrace.get().getStrCallbackUrl()));

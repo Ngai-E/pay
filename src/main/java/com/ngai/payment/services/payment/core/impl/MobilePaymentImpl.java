@@ -18,11 +18,11 @@ import java.util.UUID;
 import org.springframework.http.HttpStatus;
 
 public abstract class MobilePaymentImpl implements IPayment {
-    private  TTraceStatusRepository tTraceStatusRepository;
+    protected   TTraceStatusRepository tTraceStatusRepository;
     protected  TTraceRepository tTraceRepository;
-
-    protected PaymentContext context;
     protected String driverName;
+
+    private PaymentContext context;
     protected TPaymentProviders tPaymentProviders;
 
     public MobilePaymentImpl(TTraceStatusRepository tTraceStatusRepository,

@@ -37,21 +37,15 @@ public class PaymentDriversFactoryService {
         return this.mapOfMobilePayments.getOrDefault(driverClassName, null);
     }
 
-    public MobilePaymentImpl getMobilePaymenProcess(String driverClassName, TPaymentProviders tPaymentProviders) {
-        if (!mapOfMobilePayments.containsKey(driverClassName)) return  null;
-
-        MobilePaymentImpl mobilePayment = this.mapOfMobilePayments.get(driverClassName);
-        mobilePayment.settPaymentProviders(tPaymentProviders);
-        
-        return mobilePayment;
-    }
-
     public MobilePaymentImpl getMobilePaymentProcessByPaymenCode(String paymentCode) {
         Optional<TPaymentProviders> tPaymentProviders  = paymentProvidersRepository.findByStrPaymentCode(paymentCode).stream().findFirst();
 
         if (tPaymentProviders.isEmpty()) return null;
 
-        return getMobilePaymenProcess(tPaymentProviders.get().getStrDriverClassName(), tPaymentProviders.get());
+        MobilePaymentImpl mobilePayment = getMobilePaymenProcess(tPaymentProviders.get().getStrDriverClassName());
+        mobilePayment.settPaymentProviders(tPaymentProviders.get());
+
+        return mobilePayment;
     }
 
     public ICallbackPayment getICallbackByPaymenCode(String paymentCode) {
