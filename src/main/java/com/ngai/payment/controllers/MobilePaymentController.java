@@ -10,6 +10,7 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework .http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("v1/mobile")
 public class MobilePaymentController {
     private static final Logger LOG = LogManager.getLogger(MobilePaymentController.class);
+    private int state = 0;
 
     @Autowired
     PaymentService paymentService;
@@ -29,6 +31,11 @@ public class MobilePaymentController {
 
         ApiResponse apiResponse = Utility.buildApiResponse(paymentService, paymentService.handlePayment(body));
         return new ResponseEntity<>(apiResponse, HttpStatus.OK);
+    }
+    
+    @GetMapping("/test")
+    public int getState(){
+        return state++;
     }
 
 }
