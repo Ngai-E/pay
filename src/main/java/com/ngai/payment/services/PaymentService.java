@@ -4,7 +4,6 @@ import com.ngai.payment.model.dto.MobilePaymentRequest;
 import com.ngai.payment.model.dto.PaymentResponse;
 import com.ngai.payment.services.custom.ApiException;
 import com.ngai.payment.services.custom.Messaging;
-import com.ngai.payment.services.payment.core.contract.IPayment;
 import com.ngai.payment.services.payment.core.impl.MobilePaymentImpl;
 import com.ngai.payment.utils.ErrorCodes;
 import com.ngai.payment.utils.Parameters;

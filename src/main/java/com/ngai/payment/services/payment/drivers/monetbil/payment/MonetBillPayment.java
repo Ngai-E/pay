@@ -3,8 +3,10 @@ package com.ngai.payment.services.payment.drivers.monetbil.payment;
 import com.ngai.payment.components.ParamsCache;
 import com.ngai.payment.model.dto.MobilePaymentRequest;
 import com.ngai.payment.model.dto.PaymentResponse;
+import com.ngai.payment.model.entity.TPaymentProviders;
 import com.ngai.payment.model.entity.TReceivedCallback;
 import com.ngai.payment.model.entity.TTrace;
+import com.ngai.payment.model.repository.TPaymentProvidersRepository;
 import com.ngai.payment.model.repository.TReceivedCallbackRepository;
 import com.ngai.payment.model.repository.TTraceRepository;
 import com.ngai.payment.model.repository.TTraceStatusRepository;
@@ -35,8 +37,9 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceException;
 import javax.transaction.Transactional;
+import org.springframework.stereotype.Service;
 
-@Component
+@Service("MonetBillPayment")
 @Transactional
 public class MonetBillPayment extends MobilePaymentImpl implements ICallbackPayment<MonentBillCallbackResponse> {
     private static final Logger LOG = LogManager.getLogger();
@@ -44,6 +47,7 @@ public class MonetBillPayment extends MobilePaymentImpl implements ICallbackPaym
     MonetBillFeignClient monetBillFeignClient;
     TReceivedCallbackRepository tReceivedCallbackRepository;
     ApplicationEventPublisher applicationEventPublisher;
+    TPaymentProvidersRepository providersRepo;
     @PersistenceContext
     EntityManager em;
 
@@ -51,12 +55,16 @@ public class MonetBillPayment extends MobilePaymentImpl implements ICallbackPaym
                             TTraceStatusRepository tTraceStatusRepository,
                             MonetBillFeignClient monetBillFeignClient,
                             ApplicationEventPublisher applicationEventPublisher,
+                            TPaymentProvidersRepository providersRepo,
                             TReceivedCallbackRepository tReceivedCallbackRepository) {
         super(tTraceStatusRepository, tTraceRepository, MonetBillPayment.class.getSimpleName());
 
         this.monetBillFeignClient = monetBillFeignClient;
         this.applicationEventPublisher = applicationEventPublisher;
         this.tReceivedCallbackRepository = tReceivedCallbackRepository;
+        this.providersRepo = providersRepo;
+        
+        gettPaymentProviders();
     }
 
 
@@ -120,6 +128,13 @@ public class MonetBillPayment extends MobilePaymentImpl implements ICallbackPaym
         return paymentResponse;
     }
 
+    @Override
+    public void settPaymentProviders(TPaymentProviders tPaymentProviders) {
+        Optional<TPaymentProviders> provider  = providersRepo.findByStrDriverClassName(MonetBillPayment.class.getSimpleName()).stream().findFirst();
+        super.settPaymentProviders(provider.get());
+    }
+
+    
     @Override
     public void processCallback(MonentBillCallbackResponse callbackResponse) {
         boolean isReceived = validateCallback(callbackResponse.getPayment_ref(), callbackResponse.getStatus().name());

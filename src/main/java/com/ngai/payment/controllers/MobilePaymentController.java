@@ -35,7 +35,7 @@ public class MobilePaymentController {
     
     @GetMapping("/test")
     public int getState(){
-        return state++;
+        return state = 1 + state;
     }
 
 }

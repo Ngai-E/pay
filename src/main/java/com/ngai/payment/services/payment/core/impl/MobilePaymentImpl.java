@@ -23,7 +23,7 @@ public abstract class MobilePaymentImpl implements IPayment {
     protected String driverName;
 
     private PaymentContext context;
-    protected TPaymentProviders tPaymentProviders;
+    private TPaymentProviders tPaymentProviders;
 
     public MobilePaymentImpl(TTraceStatusRepository tTraceStatusRepository,
                              TTraceRepository tTraceRepository,
@@ -51,17 +51,17 @@ public abstract class MobilePaymentImpl implements IPayment {
         this.context = buildPaymentContext(mobilePaymentRequest);
 
         //<editor-fold defaultstate="collapsed" desc=" [VALIDATION] ">
-        if (tPaymentProviders == null) {
+        if (gettPaymentProviders() == null) {
             this.context.setError("PAYMENT PROVIDER NOT PROVIDED");
             return;
         }
 
-        if (!tPaymentProviders.getBActive()) {
+        if (!gettPaymentProviders().getBActive()) {
             this.context.setError("PAYMENT PROVIDER NOT ACTIVE");
             return;
         }
 
-        if (!tPaymentProviders.getBCashin()) {
+        if (!gettPaymentProviders().getBCashin()) {
             this.context.setError("PAYMENT PROVIDER NOT CONFIGURED FOR CASHIN TRANSACTIONS");
             return;
         }
@@ -71,7 +71,7 @@ public abstract class MobilePaymentImpl implements IPayment {
             return;
         }
 
-        if (context.getAmount() < tPaymentProviders.getDbMinDepositAmount() || context.getAmount() > tPaymentProviders.getDbMaxDepositAmount()) {
+        if (context.getAmount() < gettPaymentProviders().getDbMinDepositAmount() || context.getAmount() > gettPaymentProviders().getDbMaxDepositAmount()) {
             this.context.setError("AMOUNT MUST MEET PROVIDER LIMITS");
         }
         //</editor-fold>
@@ -86,7 +86,7 @@ public abstract class MobilePaymentImpl implements IPayment {
         tTrace.setDbAmount(this.context.getAmount());
 
 
-        tTraceRepository.save(tTrace);
+        this.tTraceRepository.save(tTrace);
         updatePaymentStatus(tTrace.getLgTraceId(), PAYMENT_STATUS.PROCESSING);
 
         proceedExternal();
