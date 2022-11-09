@@ -22,7 +22,7 @@ public abstract class MobilePaymentImpl implements IPayment {
     protected  TTraceRepository tTraceRepository;
     protected String driverCode;
 
-    private PaymentContext context;
+    protected PaymentContext context;
     protected TPaymentProviders tPaymentProviders;
 
     public MobilePaymentImpl(TTraceStatusRepository tTraceStatusRepository,
@@ -39,7 +39,7 @@ public abstract class MobilePaymentImpl implements IPayment {
         tTraceStatus.setStrExternalTransaction(this.context != null ? context.getExtTransaction() : "");
         tTraceStatus.setStrMsg(this.context != null ? context.getProviderMsg() : "");
         tTraceStatus.setStrExtCode(this.context != null ? context.getPaymentStatus() : "");
-        tTraceStatusRepository.save(tTraceStatus);
+        gettTraceStatusRepository().save(tTraceStatus);
     }
 
 
@@ -84,10 +84,10 @@ public abstract class MobilePaymentImpl implements IPayment {
         tTrace.setDbAmount(this.context.getAmount());
 
 
-        this.tTraceRepository.save(tTrace);
+        gettTraceRepository().save(tTrace);
         updatePaymentStatus(tTrace.getLgTraceId(), PAYMENT_STATUS.PROCESSING);
 
-        proceedExternal();
+        proceedExternal(context);
 
         if (context.hasError()){
             updatePaymentStatus(tTrace.getLgTraceId(), PAYMENT_STATUS.PROCESSING);
@@ -110,21 +110,37 @@ public abstract class MobilePaymentImpl implements IPayment {
     }
 
     public final PaymentContext getContext() {
-        return this.context;
+        return context;
     }
     
     //</editor-fold>
 
     //<editor-fold desc="[ ABSTRACT METHODS]" defaultstate="collapsed">
       public abstract PaymentContext buildPaymentContext(MobilePaymentRequest request);
-      public abstract PaymentResponse buildPaymentResponse();
-      public abstract void proceedExternal();
+      public abstract PaymentResponse buildPaymentResponse(PaymentContext paymentContext);
+      public abstract void proceedExternal(PaymentContext paymentContext);
     //</editor-fold>
 
 
     //<editor-fold defaultstate="collapsed" desc="[ GETTERS AND SETTERS ]">
     public TPaymentProviders gettPaymentProviders() {
         return tPaymentProviders;
+    }
+
+    public TTraceStatusRepository gettTraceStatusRepository() {
+        return tTraceStatusRepository;
+    }
+
+    public void settTraceStatusRepository(TTraceStatusRepository tTraceStatusRepository) {
+        this.tTraceStatusRepository = tTraceStatusRepository;
+    }
+
+    public TTraceRepository gettTraceRepository() {
+        return tTraceRepository;
+    }
+
+    public void settTraceRepository(TTraceRepository tTraceRepository) {
+        this.tTraceRepository = tTraceRepository;
     }
 
 

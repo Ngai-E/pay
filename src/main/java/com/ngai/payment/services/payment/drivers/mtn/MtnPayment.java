@@ -32,16 +32,17 @@ public class MtnPayment  extends MobilePaymentImpl {
         return null;
     }
 
-    @Override
-    public PaymentResponse buildPaymentResponse() {
-        return null;
-    }
-
-    @Override
-    public void proceedExternal() {
-
-    }
 
     //</editor-fold>
+
+    @Override
+    public PaymentResponse buildPaymentResponse(PaymentContext paymentContext) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
+
+    @Override
+    public void proceedExternal(PaymentContext paymentContext) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
 
 }

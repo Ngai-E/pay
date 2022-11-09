@@ -59,6 +59,8 @@ public class MonetBillPayment extends MobilePaymentImpl implements ICallbackPaym
         this.applicationEventPublisher = applicationEventPublisher;
         this.tReceivedCallbackRepository = tReceivedCallbackRepository;
         this.providersRepo = providersRepo;
+        this.tTraceStatusRepository = tTraceStatusRepository;
+        this.tTraceRepository = tTraceRepository;
         
         initPaymentProvider();
     }
@@ -80,21 +82,20 @@ public class MonetBillPayment extends MobilePaymentImpl implements ICallbackPaym
     }
 
     @Override
-    public void proceedExternal() {
-        PaymentContext paymentContext = super.getContext();
+    public void proceedExternal(PaymentContext paymentContext) {
 
-        if (getContext().hasError()) return;
+        if (paymentContext.hasError()) return;
 
         MonetbillPaymentRequestDto paymentRequestDto = new MonetbillPaymentRequestDto();
 
-        paymentRequestDto.setAmount(String.valueOf(getContext().getAmount()));
+        paymentRequestDto.setAmount(String.valueOf(paymentContext.getAmount()));
         paymentRequestDto.setNotify_url(String.format((String) ParamsCache.getParam(Parameters.KEY_CALLBACK_BASE_URL),
                 gettPaymentProviders().getStrPaymentCode(),
                 paymentContext.getTraceId())
         );
-        paymentRequestDto.setPhonenumber(getContext().getTel());
+        paymentRequestDto.setPhonenumber(paymentContext.getTel());
         paymentRequestDto.setService((String) ParamsCache.getParam(Parameters.KEY_SECRET_URL));
-        paymentRequestDto.setPayment_ref(getContext().getTraceId());
+        paymentRequestDto.setPayment_ref(paymentContext.getTraceId());
 
         MonetbillPaymentResponseDto paymentResponseDto = monetBillFeignClient.placePayment(paymentRequestDto);
 
@@ -115,11 +116,11 @@ public class MonetBillPayment extends MobilePaymentImpl implements ICallbackPaym
     }
 
     @Override
-    public PaymentResponse buildPaymentResponse() {
+    public PaymentResponse buildPaymentResponse(PaymentContext paymentContext) {
         PaymentResponse paymentResponse = new PaymentResponse();
 
-        paymentResponse.setPaymentRef(super.getContext().getTraceId());
-        paymentResponse.setStatus(super.getContext().getProviderMsg());
+        paymentResponse.setPaymentRef(paymentContext.getTraceId());
+        paymentResponse.setStatus(paymentContext.getProviderMsg());
 
         return paymentResponse;
     }

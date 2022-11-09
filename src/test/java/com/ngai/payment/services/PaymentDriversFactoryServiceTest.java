@@ -92,7 +92,7 @@ class PaymentDriversFactoryServiceTest {
             throw new ApiException(paymentDriver.getContext().getError(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
-        System.out.println(paymentDriver.buildPaymentResponse());
+        System.out.println(paymentDriver.buildPaymentResponse(paymentDriver.getContext()));
         
         assertNotNull(paymentDriver.gettPaymentProviders());
     }

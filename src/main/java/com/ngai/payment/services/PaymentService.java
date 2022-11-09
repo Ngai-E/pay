@@ -36,7 +36,7 @@ public class PaymentService extends Messaging {
         super.setErrCode(Parameters.SUCCESS);
         super.setMessage(ErrorCodes.SUCCESS_CODE);
 
-        return paymentDriver.buildPaymentResponse();
+        return paymentDriver.buildPaymentResponse(paymentDriver.getContext());
     }
 
     public void handleStatusCheck(String origTransacationRef) {
