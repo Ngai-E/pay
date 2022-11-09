@@ -50,9 +50,9 @@ class PaymentDriversFactoryServiceTest {
 
     @Test
     public void testGetDriverClass() {
-        MobilePaymentImpl paymentProcessor = paymentDriversFactoryService.getMobilePaymenProcess("MonetBillPayment");
+        MobilePaymentImpl paymentProcessor = paymentDriversFactoryService.getMobilePaymentProcessByPaymenCode("100");
 
-        System.out.println(paymentProcessor.getDriverName());
+        System.out.println(paymentProcessor.getDriverCode());
     }
 
     /**
@@ -61,9 +61,9 @@ class PaymentDriversFactoryServiceTest {
     @Test
     public void testGetMobilePaymenProcess() {
         System.out.println("getMobilePaymenProcess");
-        String driverClassName = "";
+        String code = "";
         MobilePaymentImpl expResult = null;
-        MobilePaymentImpl result = instance.getMobilePaymenProcess(driverClassName);
+        MobilePaymentImpl result = instance.getMobilePaymentProcessByPaymenCode(code);
         assertEquals(expResult, result);
         // TODO review the generated test code and remove the default call to fail.
         fail("The test case is a prototype.");
@@ -79,6 +79,7 @@ class PaymentDriversFactoryServiceTest {
         MobilePaymentImpl expResult = null;
 //        MobilePaymentImpl paymentDriver = instance.getMobilePaymentProcessByPaymenCode(paymentCode);
         MobilePaymentImpl paymentDriver = monetbill;
+            
         
                 System.out.println(paymentDriver.gettPaymentProviders().getStrPaymentType());
         

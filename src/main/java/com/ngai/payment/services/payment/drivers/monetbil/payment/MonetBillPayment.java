@@ -20,22 +20,18 @@ import com.ngai.payment.services.payment.drivers.monetbil.payment.feign.MonetBil
 import com.ngai.payment.utils.Parameters;
 import com.ngai.payment.utils.Utility;
 
-import java.sql.SQLException;
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.Date;
 import java.util.Optional;
 import java.util.UUID;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.stereotype.Component;
 
 import javax.persistence.EntityExistsException;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.persistence.PersistenceException;
 import javax.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
@@ -57,14 +53,14 @@ public class MonetBillPayment extends MobilePaymentImpl implements ICallbackPaym
                             ApplicationEventPublisher applicationEventPublisher,
                             TPaymentProvidersRepository providersRepo,
                             TReceivedCallbackRepository tReceivedCallbackRepository) {
-        super(tTraceStatusRepository, tTraceRepository, MonetBillPayment.class.getSimpleName());
+        super(tTraceStatusRepository, tTraceRepository);
 
         this.monetBillFeignClient = monetBillFeignClient;
         this.applicationEventPublisher = applicationEventPublisher;
         this.tReceivedCallbackRepository = tReceivedCallbackRepository;
         this.providersRepo = providersRepo;
         
-        gettPaymentProviders();
+        initPaymentProvider();
     }
 
 
@@ -128,10 +124,13 @@ public class MonetBillPayment extends MobilePaymentImpl implements ICallbackPaym
         return paymentResponse;
     }
 
-    @Override
-    public void settPaymentProviders(TPaymentProviders tPaymentProviders) {
+    private void initPaymentProvider() {
         Optional<TPaymentProviders> provider  = providersRepo.findByStrDriverClassName(MonetBillPayment.class.getSimpleName()).stream().findFirst();
-        super.settPaymentProviders(provider.get());
+        
+        if (provider.isEmpty()) return;
+        super.tPaymentProviders = provider.get();
+        this.driverCode = provider.get().getStrPaymentCode();
+        super.setDriverCode(driverCode);
     }
 
     
@@ -186,5 +185,10 @@ public class MonetBillPayment extends MobilePaymentImpl implements ICallbackPaym
         }
 
         return false;
+    }
+
+    @Override
+    public String getDriverCode() {
+        return this.driverCode;
     }
 }

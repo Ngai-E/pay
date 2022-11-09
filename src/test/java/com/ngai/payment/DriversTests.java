@@ -13,13 +13,5 @@ public class DriversTests {
     @Autowired
     PaymentDriversFactoryService driversFactoryService;
 
-    @Test
-    public void testGetDriverClass() {
-        MobilePaymentImpl paymentProcessor = driversFactoryService.getMobilePaymenProcess("MonetBillPayment");
 
-        System.out.println(paymentProcessor.getDriverName());
-        paymentProcessor = driversFactoryService.getMobilePaymenProcess(MtnPayment.class.getSimpleName());
-
-        System.out.println(paymentProcessor.getDriverName());
-    }
 }

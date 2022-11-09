@@ -23,7 +23,7 @@ public class MtnPayment  extends MobilePaymentImpl {
 
     @Autowired
     public MtnPayment(TTraceRepository tTraceRepository, TTraceStatusRepository tTraceStatusRepository) {
-        super(tTraceStatusRepository, tTraceRepository, MtnPayment.class.getSimpleName());
+        super(tTraceStatusRepository, tTraceRepository);
     }
 
     //<editor-fold defaulstate="collapsed" desc="[ OVERRIDE METHODS]">

@@ -20,17 +20,15 @@ import org.springframework.http.HttpStatus;
 public abstract class MobilePaymentImpl implements IPayment {
     protected   TTraceStatusRepository tTraceStatusRepository;
     protected  TTraceRepository tTraceRepository;
-    protected String driverName;
+    protected String driverCode;
 
     private PaymentContext context;
-    private TPaymentProviders tPaymentProviders;
+    protected TPaymentProviders tPaymentProviders;
 
     public MobilePaymentImpl(TTraceStatusRepository tTraceStatusRepository,
-                             TTraceRepository tTraceRepository,
-                             String driverName) {
+                             TTraceRepository tTraceRepository) {
         this.tTraceStatusRepository = tTraceStatusRepository;
         this.tTraceRepository = tTraceRepository;
-        this.driverName = driverName;
     }
 
     protected void updatePaymentStatus(String traceId, PAYMENT_STATUS status){
@@ -129,12 +127,14 @@ public abstract class MobilePaymentImpl implements IPayment {
         return tPaymentProviders;
     }
 
-    public void settPaymentProviders(TPaymentProviders tPaymentProviders) {
-        this.tPaymentProviders = tPaymentProviders;
-    }
 
-    public String getDriverName() {
-        return this.driverName;
+    public String getDriverCode() {
+        return this.driverCode;
+    }
+    public void setDriverCode(String driverCode) {
+        this.driverCode = driverCode;
     }
     //</editor-fold>
+
+
 }

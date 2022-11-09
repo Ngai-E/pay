@@ -15,5 +15,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface TPaymentProvidersRepository extends JpaRepository<TPaymentProviders, Short>, JpaSpecificationExecutor<TPaymentProviders> {
     public List<TPaymentProviders> findByStrPaymentCode(String strPaymentCode);
-    public List<TPaymentProviders> findByStrDriverClassName(String strPaymentCode);
+    public List<TPaymentProviders> findByStrDriverClassName(String strDriverClassName);
 }

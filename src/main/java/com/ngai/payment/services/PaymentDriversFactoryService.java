@@ -25,35 +25,22 @@ public class PaymentDriversFactoryService {
                                         TPaymentProvidersRepository paymentProvidersRepository) {
         this.mapOfMobilePayments
                 = listOfAvailablePayments.stream()
-                .collect(Collectors.toMap(MobilePaymentImpl::getDriverName, Function.identity()));
+                .collect(Collectors.toMap(MobilePaymentImpl::getDriverCode, Function.identity()));
         this.mapOfICallbacks
                 = iCallbackPaymentList.stream()
-                .collect(Collectors.toMap(ICallbackPayment::getDriverName, Function.identity()));
+                .collect(Collectors.toMap(ICallbackPayment::getDriverCode, Function.identity()));
 
         this.paymentProvidersRepository = paymentProvidersRepository;
     }
-
-    public MobilePaymentImpl getMobilePaymenProcess(String driverClassName) {
-        return this.mapOfMobilePayments.getOrDefault(driverClassName, null);
-    }
-
+    
     public MobilePaymentImpl getMobilePaymentProcessByPaymenCode(String paymentCode) {
-        Optional<TPaymentProviders> tPaymentProviders  = paymentProvidersRepository.findByStrPaymentCode(paymentCode).stream().findFirst();
-
-        if (tPaymentProviders.isEmpty()) return null;
-
-        MobilePaymentImpl mobilePayment = getMobilePaymenProcess(tPaymentProviders.get().getStrDriverClassName());
-        mobilePayment.settPaymentProviders(tPaymentProviders.get());
+        MobilePaymentImpl mobilePayment = this.mapOfMobilePayments.getOrDefault(paymentCode, null);
 
         return mobilePayment;
     }
 
     public ICallbackPayment getICallbackByPaymenCode(String paymentCode) {
-        Optional<TPaymentProviders> tPaymentProviders  = paymentProvidersRepository.findByStrPaymentCode(paymentCode).stream().findFirst();
-
-        if (tPaymentProviders.isEmpty()) return null;
-
-        return this.mapOfICallbacks.getOrDefault(tPaymentProviders.get().getStrDriverClassName(), null);
+        return this.mapOfICallbacks.getOrDefault(paymentCode, null);
     }
     
 }
